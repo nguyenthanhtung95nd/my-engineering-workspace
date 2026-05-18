@@ -1,8 +1,8 @@
 # Role: BA — Business Analyst
 
-> Responsible for clarifying requirements, writing user stories, defining
-> acceptance criteria, and ensuring developers can implement without ambiguity.
-> Works between the stakeholder and the development team.
+> Responsible for clarifying business requirements, writing stakeholder-facing
+> documents, and ensuring the business need is fully understood before any
+> development begins. Works between the stakeholder and the development team.
 
 ---
 
@@ -10,21 +10,48 @@
 
 | Tool | Purpose |
 |------|---------|
-| `grill-me` | Surface business ambiguities and edge cases before writing the spec |
-| `write-a-prd` | Produce a structured PRD with user stories and acceptance criteria |
-| `/architect` | Validate technical feasibility of business requirements |
-| `/workflow Trigger A` | Identify technical unknowns in a given user story |
+| `grill-me` | Surface business ambiguities one question at a time before writing anything |
+| `write-ba-docs` | Write BRD, FRD, and User Stories for stakeholder review and sign-off |
+| `ba-analysis` | API analysis, data mapping, UAT test cases, SQL, validation rules |
+| `/impact` | Structured impact & gap analysis when a requirement or rule is changing |
 
 ---
 
 ## Workflow
 
 ```
-1. grill-me          → Interview stakeholder requirements one question at a time
-2. write-a-prd       → Structured PRD: problem, user stories, AC, out of scope
-3. /architect        → Technical feasibility check — flag constraints early
-4. Hand to DEV       → PRD is complete enough to implement without clarification
+1. grill-me        → Interview stakeholder, resolve all ambiguities first
+2. write-ba-docs   → BRD / FRD / User Stories → stakeholder sign-off
+3. ba-analysis     → Deep-dive on API, data, UAT, or validation when needed
+4. /impact         → Run if this feature touches an existing system or business rule
+5. Hand to DEV     → Documents are complete, unambiguous, signed off
 ```
+
+---
+
+## The 5-Element Prompt Rule
+
+Before writing any prompt to Claude, confirm all five are present.
+Missing any one leads to generic, unusable output.
+
+```
+1. Business context      — What domain / process is this feature part of?
+2. System context        — Which systems are involved? What integrations exist?
+3. Technical expectation — What format and depth is expected in the output?
+4. Edge cases            — What can go wrong? Boundary values? Negative scenarios?
+5. Downstream impact     — Which systems, reports, or teams are affected?
+```
+
+**Weak prompt:**
+> "Write User Stories for the payment feature."
+
+**Strong prompt:**
+> "Act as a Technical BA on a Wealth Management platform.
+> The feature is Mutual Fund Redemption via API integration with a Fund Accounting system.
+> Write User Stories covering: API validations, retry mechanism, downstream impact on
+> the portfolio ledger, data quality rules, and negative scenarios (insufficient balance,
+> fund suspended, settlement failure).
+> Output as a table: Story ID | Actor | Story | Acceptance Criteria | Priority."
 
 ---
 
@@ -45,115 +72,87 @@ CreatedAt, UpdatedAt. Confirm which are required vs optional.*
 
 **Q2:** Who can create, update, and delete products? Any role distinction?
 *My recommendation: distinguish at least two roles — Admin (full CRUD) and
-Viewer (read-only). This affects the Cognito User Pool group setup.*
+Viewer (read-only).*
 
 **Q3:** When a product is "deleted", is it a hard delete or soft delete?
 *My recommendation: soft delete — set `IsActive = false`. Hard delete loses
-audit history and breaks foreign key references in order history.*
+audit history and breaks references in order history.*
 
 **Q4:** Are there validation rules on Price or StockCount?
 *My recommendation: Price ≥ 0, StockCount ≥ 0. Clarify whether Price = 0
 is valid (free products) or should be rejected.*
 
-**Q5:** Should the list endpoint support filtering or pagination?
+**Q5:** Should the list support filtering or pagination?
 *My recommendation: yes to pagination (default 20, max 100) from day one —
-retrofitting is expensive. Filtering by IsActive at minimum.*
+retrofitting is expensive.*
 
 ---
 
-### Step 2 — write-a-prd output
+### Step 2 — write-ba-docs: FRD output
 
 ```markdown
-## Problem Statement
-The operations team needs to manage the product catalogue through an API.
+## Overview
+The operations team needs to manage the product catalogue through a system.
 Currently products are managed directly in the database, which is error-prone
-and not accessible to non-technical staff.
+and inaccessible to non-technical staff.
 
-## Solution
-A REST API (API Gateway + Lambda) that exposes full CRUD operations on products,
-secured by role-based access via Cognito.
+## Actors
+- Admin — full create, update, soft-delete access
+- Viewer — read-only access
 
-## User Stories
+## Business Rules
+- Price must be ≥ 0 (zero is valid for free products)
+- StockCount must be ≥ 0
+- Deletion is soft only — IsActive set to false, record is never removed
+- Deleted products must not appear in any listing
 
-1. As an **Admin**, I want to create a product with name, description, price,
-   and stock count, so that new products appear in the catalogue.
+## Functional Requirements
 
-2. As an **Admin**, I want to update any field of an existing product,
-   so that I can correct mistakes or update pricing.
-
-3. As an **Admin**, I want to soft-delete a product (set IsActive = false),
-   so that it is hidden from the catalogue without losing its history.
-
-4. As a **Viewer**, I want to retrieve a single product by ID,
-   so that I can inspect its current details.
-
-5. As a **Viewer**, I want to list all active products with pagination,
-   so that I can browse the catalogue without loading everything at once.
-
-6. As the **system**, when a create or update request contains invalid data
-   (negative price, empty name), I want to return HTTP 422 with field-level
-   errors, so that the caller knows exactly what to fix.
-
-## Acceptance Criteria
-
-### Story 1 — Create product
-- POST /products with valid body → HTTP 201, returns created product with Id
-- POST /products with missing Name → HTTP 422, error identifies the field
-- POST /products with Price < 0 → HTTP 422
-- POST /products without Admin role → HTTP 403
-
-### Story 3 — Soft delete
-- DELETE /products/{id} → sets IsActive = false, returns HTTP 204
-- DELETE /products/{id} for non-existent product → HTTP 404
-- Deleted product does NOT appear in GET /products list
-
-### Story 5 — List with pagination
-- GET /products?page=1&pageSize=20 → returns first 20 active products
-- GET /products?pageSize=101 → HTTP 422 (exceeds max)
-- Response includes: items[], totalCount, page, pageSize, hasNextPage
-
-## Implementation Decisions
-- Soft delete only — IsActive flag, no physical row removal
-- Roles: Admin (full CRUD), Viewer (GET only) — enforced via Cognito groups
-- Pagination: cursor-based not required at this scale; page/pageSize sufficient
-- Price validation: 0 is valid (free products), negative is not
+| Req ID | Description | Business Rule | Priority |
+|--------|-------------|--------------|----------|
+| FR-01 | Admin can create a product | All required fields must be present | Must |
+| FR-02 | Admin can update any product field | Price and StockCount ≥ 0 | Must |
+| FR-03 | Admin can soft-delete a product | Sets IsActive = false | Must |
+| FR-04 | Viewer can retrieve a product by ID | Returns active products only | Must |
+| FR-05 | Viewer can list products with pagination | Default 20, max 100 per page | Must |
+| FR-06 | System rejects invalid input | Returns field-level error messages | Must |
 
 ## Out of Scope
 - Product images or media attachments
 - Product categories or tagging
 - Inventory reservation or stock locking
-- Audit log of who changed what (tracked in future sprint)
-
-## Further Notes
-- "Viewer" group in Cognito must be created as part of CDK stack
-- Lambda should return consistent error envelope: { error: string, field?: string }
+- Audit log of who changed what
 ```
 
 ---
 
-### Step 3 — /architect: Feasibility check
+### Step 3 — /impact: Before handing to DEV
 
 ```
-/architect
-"Is the PRD above technically feasible within 3 weeks with 1 developer?
- Flag any requirement that adds unexpected complexity."
+/impact
+CHANGE:   New product management feature
+SYSTEM:   Product API
+TRIGGER:  Operations team request
+CURRENT:  Products managed directly in database
+FUTURE:   Managed via API with role-based access
+DATA:     products table, any downstream order or reporting queries
 ```
-
-Claude flags:
-- Pagination is trivial with Dapper — no concern
-- Cognito group-based role check requires reading group claims from JWT — one-time setup, not complex
-- Soft delete with IsActive filter needs a composite index on (IsActive, CreatedAt) — add to schema
 
 ---
 
 ## BA Checklist
 
 ```
-□ grill-me completed — all business ambiguities resolved
-□ PRD has user stories for ALL actors (Admin, Viewer, System)
-□ Acceptance criteria are testable — QA can write test cases directly from them
-□ Edge cases documented: invalid input, missing resources, unauthorized access
-□ Out-of-scope section prevents scope creep
-□ /architect feasibility check done — no technical surprises for DEV
-□ PRD saved to prd/{feature}-prd.md
+□ grill-me completed — all business ambiguities resolved with stakeholder
+□ 5-element prompt rule applied to every Claude prompt
+□ Documents cover ALL actors and their goals
+□ Acceptance criteria are testable — QA can write test cases from them
+□ Edge cases documented: invalid input, missing data, boundary values
+□ Out-of-scope section is explicit — prevents scope creep
+□ /impact run if this touches an existing system, API, or business rule
+□ Stakeholder has reviewed and signed off before handing to DEV
 ```
+
+---
+
+> *"Great BAs ask great questions. AI helps them get extraordinary answers."*
