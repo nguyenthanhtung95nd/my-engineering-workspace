@@ -14,7 +14,9 @@
 | `do-work` | Implement phase by phase — build/test loop, Work Summary |
 | `/code-review BUGS,SECURITY` | Final gate before raising a PR |
 | `/debug` | Root cause analysis when something breaks |
+| `diagnose` | Hard or flaky bugs — structured feedback loop, reproduce, hypothesise, fix |
 | `/migrate` | Validate schema changes before applying |
+| `improve-codebase-architecture` | Find deepening opportunities after a feature ships |
 
 ---
 
@@ -38,6 +40,12 @@
 2. /debug           → Root cause — never fix without understanding why
 3. do-work          → Minimal fix + regression test
 4. /code-review     → Before PR
+```
+
+For hard or flaky bugs (not reproducible, non-deterministic):
+
+```
+diagnose  → structured 6-phase loop: build feedback loop → reproduce → hypothesise → fix
 ```
 
 ### Quick Task (no PRD needed)

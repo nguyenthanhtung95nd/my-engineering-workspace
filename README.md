@@ -82,6 +82,9 @@ claude-mastery/
     │
     ├── skills/                          ← Pipeline + auto-invoked workflows
     │   ├── grill-me/                    ← Interview: one question at a time
+    │   ├── grill-with-docs/             ← Grill + shared language (CONTEXT.md) + ADRs
+    │   ├── diagnose/                    ← Hard/flaky bugs: feedback loop → hypothesise → fix
+    │   ├── improve-codebase-architecture/ ← Deepening opportunities → HTML report
     │   ├── write-a-prd/                 ← Structured PRD → prd/{feature}-prd.md
     │   ├── prd-to-plan/                 ← Vertical slices → plans/{feature}-plan.md
     │   ├── do-work/                     ← Implement + build/test loop + Work Summary
@@ -160,9 +163,11 @@ Every feature moves through this pipeline.
 ```
 Vague idea
     ↓
-grill-me       Interview: one question at a time.
-               Claude gives a recommended answer first.
-               Explores the codebase instead of asking what is already there.
+grill-me           Interview: one question at a time.
+                   Claude gives a recommended answer first.
+                   Explores the codebase instead of asking what is already there.
+grill-with-docs    Same as grill-me + builds shared language (CONTEXT.md) + records ADRs.
+                   Use when the project needs consistent domain terminology.
     ↓
 write-a-prd    Structured PRD saved to prd/{feature}-prd.md.
                Problem statement, user stories, acceptance criteria, out of scope.
@@ -198,6 +203,47 @@ Just describe the task — Claude treats it as `do-work` without a plan file.
 "Refactor ProcessBatchAsync — it is over 40 lines."
 ```
 
+### Solo developer — playing all roles (SA + BA + DEV + QA)
+
+When you own the full ticket end-to-end, `grill-me` and `grill-with-docs` run
+in sequence — not as alternatives. Each covers a different hat.
+
+**New feature or complex ticket:**
+
+```
+New ticket
+    ↓
+grill-me           Put on the BA + SA hat.
+                   Clarify scope, constraints, actors, edge cases.
+                   One question at a time until nothing is ambiguous.
+    ↓
+grill-with-docs    Lock down domain language → update CONTEXT.md.
+                   Record architectural decisions as ADRs.
+                   Skip if the ticket introduces no new domain concepts.
+    ↓
+write-a-prd        Document requirements before writing any code.
+    ↓
+prd-to-plan        Slice into vertical phases. Put on the DEV hat.
+    ↓
+do-work            Implement phase by phase — build/test loop.
+    ↓
+/code-review BUGS,SECURITY → Final gate before PR. Put on the QA hat.
+```
+
+**Small ticket — implementation on known ground:**
+
+```
+grill-me   → Quick alignment, no file creation
+    ↓
+do-work    → Implement + regression test
+    ↓
+/code-review BUGS,SECURITY → Before PR
+```
+
+**The rule:** if the ticket introduces a concept not yet in `CONTEXT.md`, always
+run `grill-with-docs`. If it is purely implementation on known ground, `grill-me`
+alone is enough.
+
 ---
 
 ## 5. Five Engineering Roles
@@ -228,6 +274,7 @@ This single project illustrates every role in sequence.
 ```
 SA     → grill-me: HTTP API vs REST API, RDS Proxy, CDK stack design
          /architect: trade-off table, recommendation, ADR-001 committed
+         improve-codebase-architecture: deepening review after implementation
          See: docs/roles/sa-solution-architect.md
 
 BA     → grill-me: What defines a product? Roles? Soft delete?
@@ -238,6 +285,7 @@ DEV    → prd-to-plan: 6 phases (skeleton → repository → service → routin
          do-work: implement phase by phase, build/test loop each phase
          /migrate: schema safety review before applying to RDS
          /code-review BUGS,SECURITY: Critical — GET by ID missing is_active filter
+         diagnose: for hard or flaky bugs that cannot be reproduced with /debug alone
          See: docs/roles/dev-developer.md
 
 QA     → /test: xUnit suite — happy path, validation, soft delete, pagination
@@ -476,6 +524,9 @@ During the day — build:
   agents/ self-delegate as needed
   you focus on business logic and domain decisions
 
+Hard or flaky bug:
+  diagnose    ← structured 6-phase loop: build feedback loop → reproduce → hypothesise → fix
+
 End of day — pre-commit:
   /code-review BUGS,SECURITY    ← always
   /migrate                      ← if schema changed
@@ -511,6 +562,9 @@ dotnet test                     ← all tests pass locally
 | Design decision | `/architect` |
 | GDPR or compliance audit | `/compliance` |
 | Joining a new codebase | `/onboard` |
+| Build shared domain language + ADRs | `grill-with-docs` |
+| Hard or flaky bug | `diagnose` |
+| Find architecture improvement opportunities | `improve-codebase-architecture` |
 
 ### Five rules to never break
 

@@ -14,6 +14,7 @@
 | `/code-review BUGS` | Identify logic errors and edge cases |
 | `/perf` | Performance test targets and bottleneck analysis |
 | `/debug` | Root cause analysis when a test fails unexpectedly |
+| `diagnose` | Hard or flaky test failures — structured feedback loop to find the root cause |
 
 ---
 

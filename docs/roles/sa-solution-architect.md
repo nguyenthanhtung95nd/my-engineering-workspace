@@ -10,9 +10,11 @@
 | Tool | Purpose |
 |------|---------|
 | `grill-me` | Surface all constraints and unknowns before committing to a direction |
+| `grill-with-docs` | Build shared domain language (CONTEXT.md) + record key decisions as ADRs |
 | `write-a-prd` | Document the architectural decision and the options considered |
 | `/architect` | Trade-off analysis, right-sized recommendation, ADR generation |
 | `/compliance` | Verify security and regulatory requirements upfront |
+| `improve-codebase-architecture` | Find deepening opportunities — generates HTML report with before/after diagrams |
 
 ---
 

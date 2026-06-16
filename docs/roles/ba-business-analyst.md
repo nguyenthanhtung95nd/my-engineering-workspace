@@ -11,6 +11,7 @@
 | Tool | Purpose |
 |------|---------|
 | `grill-me` | Surface business ambiguities one question at a time before writing anything |
+| `grill-with-docs` | Same as grill-me + builds shared domain language (CONTEXT.md) + records ADRs |
 | `write-ba-docs` | Write BRD, FRD, and User Stories for stakeholder review and sign-off |
 | `ba-analysis` | API analysis, data mapping, UAT test cases, SQL, validation rules |
 | `/impact` | Structured impact & gap analysis when a requirement or rule is changing |
