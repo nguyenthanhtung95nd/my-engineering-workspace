@@ -290,7 +290,7 @@ BA     → grill-me: What defines a product? Roles? Soft delete?
 DEV    → prd-to-plan: 6 phases (skeleton → repository → service → routing → auth → tests)
          do-work: implement phase by phase, build/test loop each phase
          /migrate: schema safety review before applying to RDS
-         /code-review BUGS,SECURITY: Critical — GET by ID missing is_active filter
+         /code-review: Critical — GET by ID missing is_active filter
          diagnose: for hard or flaky bugs that cannot be reproduced with /debug alone
          See: docs/roles/dev-developer.md
 
