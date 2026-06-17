@@ -1,143 +1,208 @@
 ---
 name: dotnet-patterns
 description: >
-  Load automatically when working with C# files, .NET projects,
-  ASP.NET Core controllers, EF Core repositories, or any .cs file.
-  Provides .NET 8 conventions, production-ready code patterns,
-  and team standards for this workspace.
+  .NET 8 engineering guidelines: TDD, C# 12, behavior-driven testing,
+  immutability, and Lambda-specific patterns (Autofac, Dapper, Moq).
+  Auto-loads on .cs and .csproj files.
 context: auto
-patterns:
-  - "**/*.cs"
-  - "**/*.csproj"
-  - "**/appsettings*.json"
 ---
 
-# .NET Engineering Patterns
+# .NET 8 Engineering Patterns
 
-## Error Handling — Result<T> (mandatory)
+## Core Philosophy
 
-Every service and repository method returns `Result<T>`. Never return null. Never throw a generic exception without logging.
+**TDD is non-negotiable.** RED → GREEN → REFACTOR.
+
+1. Define expected behavior.
+2. Write a failing test.
+3. Implement the minimum code to pass.
+4. Refactor only if it improves clarity or maintainability.
+
+Never design a large solution before establishing behavior through tests.
+
+**Prefer boring and obvious solutions over clever ones.** If a junior engineer cannot understand it quickly, simplify it.
+
+## Test Behavior, NOT Implementation
+
+Treat the system under test as a black box. Validate inputs, outputs, state transitions, and business outcomes.
+
+**Do NOT test:**
+- Private methods or internal implementation details
+- Framework mechanics
+- Method invocation counts unless behavior depends on them
+- Repository calls in isolation from their SQL
+
+Good tests describe business rules. Bad tests describe implementation.
+
+## DRY — Knowledge, Not Code
+
+DRY means **do not duplicate knowledge** — not "remove every piece of similar-looking code."
+
+Two code blocks that represent different business concepts must remain separate even if they look similar.
+
+> **Wrong abstractions are more expensive than duplication.**
+
+Abstract only when behavior and meaning are truly shared.
+
+## Business-First Architecture
+
+Organize code around business capabilities, not technical layers.
+
+```
+// Prefer — developer understands WHAT the system does
+Sync/
+Products/
+Categories/
+
+// Avoid — developer only knows HOW it's structured
+Services/
+Repositories/
+DTOs/
+```
+
+## C# 12 (.NET 8)
 
 ```csharp
-public async Task<Result<T>> GetByIdAsync(
-    int id,
-    CancellationToken cancellationToken = default)
+// Primary constructors — preferred over traditional boilerplate
+public sealed class SyncService(IParserService parser, ILogger<SyncService> logger) { }
+
+// Collection expressions
+string[] empty = [];
+List<string> skus = ["SKU-001", "SKU-002"];
+
+// Pattern matching guard
+if (entity is null) throw new ArgumentNullException(nameof(entity));
+var label = status switch { SyncStatus.Success => "ok", _ => "fail" };
+```
+
+## Immutability — Records for DTOs
+
+```csharp
+// DTOs and value objects → record (immutable, structural equality)
+public record SyncContext(string StoreCode, SyncType SyncType, string? Cursor = null);
+
+// Strongly typed IDs — prevent primitive obsession
+public readonly record struct StoreId(string Value)
 {
-    if (id <= 0)
-        return Result.Failure<T>("ID must be greater than zero.");
-
-    try
-    {
-        var entity = await _db.Set<T>()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-
-        return entity is null
-            ? Result.Failure<T>($"{typeof(T).Name} with ID {id} was not found.")
-            : Result.Success(entity);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Failed to retrieve {Entity} {Id}", typeof(T).Name, id);
-        return Result.Failure<T>("An unexpected error occurred.");
-    }
+    public override string ToString() => Value;
 }
 ```
 
-## EF Core Query Conventions
+## Nullable Reference Types (mandatory)
+
+```xml
+<!-- Every .csproj must have -->
+<Nullable>enable</Nullable>
+<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+```
 
 ```csharp
-// Read-only queries — always AsNoTracking()
-var items = await _db.Orders
-    .AsNoTracking()
-    .Where(o => o.UserId == userId)
-    .OrderBy(o => o.CreatedAt)
-    .ToListAsync(cancellationToken);
-
-// Write operations — track for change detection
-var entity = await _db.Orders
-    .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+ArgumentNullException.ThrowIfNull(request);  // .NET 6+ guard
+string? cursor = null;                        // always declare intent
 ```
 
 ## Async Conventions
 
 ```csharp
-// Always include CancellationToken with a default value
-public async Task<Result<User>> GetUserAsync(
-    int id,
-    CancellationToken cancellationToken = default)
+// Always propagate CancellationToken — never .Result or .Wait()
+public async Task<List<ItemEntity>> GetBySkusAsync(
+    IEnumerable<string> skus,
+    CancellationToken ct = default)
 
-// Never sync-over-async
-// ❌  var result = service.GetAsync().Result;
-// ✅  var result = await service.GetAsync();
+// ConfigureAwait(false) in library / infrastructure code
+var result = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
 ```
 
-## Constructor Injection
+## Test Data — Builder Pattern
+
+Builders produce valid objects by default, require minimal setup, and hide irrelevant details. Tests should emphasize intent, not setup.
 
 ```csharp
-public sealed class UserService
+// Fluent builder with sensible defaults — one per domain object
+public class SyncContextBuilder
 {
-    private readonly AppDbContext _db;
-    private readonly ILogger<UserService> _logger;
+    private string _store = "store-001";
+    private SyncType _type = SyncType.Incremental;
 
-    public UserService(AppDbContext db, ILogger<UserService> logger)
-    {
-        _db = db;
-        _logger = logger;
-    }
+    public SyncContextBuilder WithStore(string store) { _store = store; return this; }
+    public SyncContextBuilder WithType(SyncType type) { _type = type; return this; }
+    public SyncContext Build() => new(_store, _type);
 }
-```
-
-## XML Doc Comments (required on public APIs)
-
-```csharp
-/// <summary>
-/// Retrieves a user by their unique identifier.
-/// </summary>
-/// <param name="id">The user ID. Must be greater than zero.</param>
-/// <param name="cancellationToken">Token to cancel the operation.</param>
-/// <returns>
-/// <see cref="Result{T}.Success"/> with the user if found;
-/// <see cref="Result{T}.Failure"/> with an error message otherwise.
-/// </returns>
-public async Task<Result<User>> GetUserAsync(
-    int id,
-    CancellationToken cancellationToken = default)
 ```
 
 ## Naming Conventions
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Classes / Interfaces | PascalCase | `UserService`, `IUserRepository` |
-| Methods | PascalCase | `GetUserAsync`, `CreateOrderAsync` |
-| Private fields | `_camelCase` | `_db`, `_logger`, `_cache` |
-| Parameters / locals | camelCase | `userId`, `cancellationToken` |
-| Constants | PascalCase | `DefaultPageSize`, `MaxRetryCount` |
+| Classes / Interfaces | PascalCase | `SyncService`, `ISyncService` |
+| Methods | PascalCase | `DispatchAsync`, `GetBySkusAsync` |
+| Private fields | `_camelCase` | `_parser`, `_logger` |
+| Parameters / locals | camelCase | `sqsEvent`, `cancellationToken` |
+| Constants | PascalCase | `BatchSize`, `MaxRetryCount` |
 
-## DI Lifetime Rules
+## DI Lifetime Rules (Autofac — Lambda)
 
 ```csharp
-// Scoped — one instance per HTTP request (DbContext, application services)
-builder.Services.AddScoped<IUserService, UserService>();
+// SingleInstance — stateless, shared across warm invocations
+containerBuilder.RegisterType<ApiClient>().As<IApiClient>().SingleInstance();
 
-// Singleton — one instance for the application lifetime (config, thread-safe caches)
-builder.Services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
-
-// Transient — new instance every time (lightweight, stateless utilities)
-builder.Services.AddTransient<IEmailFormatter, EmailFormatter>();
-
-// ⚠️ Never register DbContext as Singleton — causes InvalidOperationException under concurrent load
+// InstancePerLifetimeScope — one per Lambda invocation (DEFAULT for everything else)
+containerBuilder.RegisterType<SyncService>().As<ISyncService>().InstancePerLifetimeScope();
 ```
+
+## Error Handling (Lambda)
+
+Lambda services **throw and rethrow** — `Result<T>` is **not** used in the Lambda layer.
+`BrokenCircuitException` must propagate to the runtime — never catch it in `SyncService`.
+
+```csharp
+catch (HttpRequestException ex)
+{
+    _logger.LogError(ex, "Request failed for SKU {Sku}", sku);
+    throw;
+}
+```
+
+## Code Review Framework
+
+When reviewing code, evaluate in this order:
+
+| Dimension | Question |
+|-----------|----------|
+| **Correctness** | Does it work? Are edge cases handled? |
+| **Testability** | Can behavior be tested easily without mocking internals? |
+| **Maintainability** | Will future developers understand it? |
+| **Simplicity** | Is there a simpler solution? |
+| **Architecture** | Does the code belong in the correct layer? |
+
+Suggest improvements ordered by impact. Do not refactor unless there is measurable value.
+
+## Performance Mindset
+
+Never optimize prematurely. Follow this order:
+
+**Correctness → Readability → Maintainability → Measurement → Optimization**
+
+Never introduce complexity for hypothetical performance gains. Measure first, optimize second.
+
+## TDD Output Format (when implementing a feature)
+
+1. Explain the expected behavior.
+2. Identify test cases (happy path + edge cases).
+3. Write tests first.
+4. Implement the minimum code to pass.
+5. Refactor if it improves clarity.
+6. Explain key architectural decisions.
 
 ## Pre-Submission Checklist
 
-Before committing any C# code:
-
-- [ ] All service/repository methods return `Result<T>`
+- [ ] Tests written **before** production code (TDD — Red → Green → Refactor)
+- [ ] Tests validate behavior, not implementation details
 - [ ] All async methods have `CancellationToken`
-- [ ] All read-only EF Core queries use `AsNoTracking()`
+- [ ] No `.Result` or `.Wait()`
+- [ ] `<Nullable>enable</Nullable>` active — no unchecked null dereferences
 - [ ] All public methods have XML doc comments
-- [ ] Input validated at method entry — fail fast
 - [ ] No bare `catch (Exception)` without structured logging
-- [ ] No hardcoded connection strings, passwords, or API keys
+- [ ] No SQL string concatenation — parameterized `DynamicParameters` only
+- [ ] No hardcoded credentials, API keys, or connection strings
+- [ ] Abstraction justified — not extracted just because code looks similar

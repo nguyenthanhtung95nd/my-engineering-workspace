@@ -32,7 +32,7 @@ It combines:
 - A **full feature development pipeline** — from vague idea to merged PR
 - **Always-on engineering rules** loaded automatically every session
 - **Specialized subagents** that self-delegate for debugging, review, and docs lookup
-- **19 manual commands** for deep, targeted work
+- **21 manual commands** for deep, targeted work
 - **Context and templates** for both stacks
 
 ### How this differs from generic AI chat
@@ -87,8 +87,9 @@ claude-mastery/
     │   ├── improve-codebase-architecture/ ← Deepening opportunities → HTML report
     │   ├── write-a-prd/                 ← Structured PRD → prd/{feature}-prd.md
     │   ├── prd-to-plan/                 ← Vertical slices → plans/{feature}-plan.md
-    │   ├── do-work/                     ← Implement + build/test loop + Work Summary
+    │   ├── do-work/                     ← Implement + build/test loop + Work Summary (stack-agnostic)
     │   ├── write-a-skill/               ← Create new skills for this workspace
+    │   ├── ship-feature/                ← Pre-PR orchestrator: /code-review → /security-review → /test-coverage → /pr-summary
     │   ├── dotnet-patterns/             ← Auto-loads on .cs/.csproj files
     │   ├── security-audit/              ← Auto-loads on auth/payment/data files
     │   └── architecture-decision/       ← Auto-loads on design discussions
@@ -102,14 +103,15 @@ claude-mastery/
     │   ├── code-explainer.md            ← Legacy code understanding
     │   └── performance-analyzer.md      ← N+1, slow queries, memory issues
     │
-    └── commands/                        ← 19 manual triggers
-        ├── code-review.md               ← /code-review [BUGS|SECURITY|PERFORMANCE]
+    └── commands/                        ← 21 manual triggers
+        ├── code-review.md               ← /code-review — bugs + performance on changed files
         ├── review.md                    ← /review
         ├── security-review.md           ← /security-review
         ├── generate.md                  ← /generate
         ├── debug.md                     ← /debug
         ├── refactor.md                  ← /refactor
         ├── test.md                      ← /test
+        ├── test-coverage.md             ← /test-coverage — coverage gap report for changed files
         ├── migrate.md                   ← /migrate
         ├── incident.md                  ← /incident
         ├── perf.md                      ← /perf
@@ -121,6 +123,7 @@ claude-mastery/
         ├── architect.md                 ← /architect
         ├── saas.md                      ← /saas
         ├── workflow.md                  ← /workflow
+        ├── pr-summary.md                ← /pr-summary — PR description from git diff
         └── team-standards.md            ← /team-standards
 ```
 
@@ -135,16 +138,18 @@ Layer 1 — Always On
   apply automatically. You never need to say "follow .NET conventions."
 
 Layer 2 — Context Aware
-  skills/ auto-load by file type or topic.
-  Open a Controller → security-audit skill loads.
-  Ask about caching → architecture-decision skill loads.
-  Write any .cs code → dotnet-patterns skill loads.
+  skills/ load by file pattern (VSCode extension) or Claude's judgment.
+  Open a .cs / .csproj file   → dotnet-patterns loads (file pattern match).
+  Open a Controller/Auth file  → security-audit loads (file pattern match).
+  Ask about architecture       → architecture-decision loads (Claude judgment).
+  Requires VSCode extension for file-pattern matching to work.
 
 Layer 3 — Self-Delegating
-  agents/ trigger automatically by situation.
-  Any error or failing test    → debugger invoked.
-  Code written or modified     → code-reviewer invoked.
-  Library or SDK question      → docs-explorer fetches live docs.
+  CLAUDE.md instructs Claude to delegate to agents in specific situations.
+  Any error or failing test    → Claude invokes debugger agent.
+  Code written or modified     → Claude invokes code-reviewer agent.
+  Library or SDK question      → Claude invokes docs-explorer agent.
+  Reliability depends on Claude following CLAUDE.md — not hard-wired.
 
 Layer 4 — Manual Power
   commands/ for deep, targeted work you explicitly request.
@@ -176,10 +181,11 @@ prd-to-plan    Vertical slices saved to plans/{feature}-plan.md.
                Each phase cuts end-to-end: schema + logic + tests.
     ↓
 do-work        Implement phase by phase.
-               Loop: implement → dotnet build → dotnet test → fix → repeat.
+               Loop: implement → build → test → fix → repeat (stack detected automatically).
                Ends with a structured Work Summary.
     ↓
-/code-review   Run /code-review BUGS,SECURITY before raising the PR.
+ship-feature   Run before every PR: /code-review → /security-review → /test-coverage → /pr-summary.
+               Stops at Critical findings. Outputs PR description ready to paste.
 ```
 
 ### When to enter at each stage
@@ -190,7 +196,7 @@ do-work        Implement phase by phase.
 | A clear problem statement | `write-a-prd` |
 | A finished PRD | `prd-to-plan` |
 | A plan or a small clear task | `do-work` |
-| Finished code, need review | `/code-review BUGS,SECURITY` |
+| Finished code, ready for PR | `ship-feature` |
 
 ### Quick tasks — no pipeline needed
 
@@ -227,7 +233,7 @@ prd-to-plan        Slice into vertical phases. Put on the DEV hat.
     ↓
 do-work            Implement phase by phase — build/test loop.
     ↓
-/code-review BUGS,SECURITY → Final gate before PR. Put on the QA hat.
+ship-feature → Final gate before PR. Put on the QA hat.
 ```
 
 **Small ticket — implementation on known ground:**
@@ -237,7 +243,7 @@ grill-me   → Quick alignment, no file creation
     ↓
 do-work    → Implement + regression test
     ↓
-/code-review BUGS,SECURITY → Before PR
+ship-feature → Before PR
 ```
 
 **The rule:** if the ticket introduces a concept not yet in `CONTEXT.md`, always
@@ -404,7 +410,7 @@ Day N — Story starts
 
 Day N+1 or N+2 — Story ready for review
 
-  DEV  → /code-review BUGS,SECURITY → fix all Critical issues → raise PR
+  DEV  → ship-feature → fix all Critical findings → raise PR
   QA   → Review PR: run tests locally, verify AC point by point
   SA   → Architecture review on PR if story touched core design
   DevOps → Verify CI passes: build + unit test + integration test all green
@@ -528,7 +534,7 @@ Hard or flaky bug:
   diagnose    ← structured 6-phase loop: build feedback loop → reproduce → hypothesise → fix
 
 End of day — pre-commit:
-  /code-review BUGS,SECURITY    ← always
+  /code-review                  ← always (bugs + performance)
   /migrate                      ← if schema changed
   do-work Work Summary          ← document what changed and why
 ```
@@ -536,9 +542,15 @@ End of day — pre-commit:
 ### Before Raising a PR
 
 ```
-/code-review BUGS,SECURITY      ← mandatory, no exceptions
-/security-review                ← if auth, payment, or data access changed
-dotnet test                     ← all tests pass locally
+ship-feature                    ← one command: /code-review + /security-review + /test-coverage + /pr-summary
+```
+
+Or run individually:
+```
+/code-review                    ← bugs + performance on all changed files
+/security-review                ← OWASP scan (auth, payment, or data access)
+/test-coverage                  ← coverage gap report for changed files
+/pr-summary                     ← PR description from git diff
 ```
 
 ---
@@ -553,7 +565,7 @@ dotnet test                     ← all tests pass locally
 | Need a spec | `write-a-prd` |
 | Need a phased plan | `prd-to-plan` |
 | Ready to implement | `do-work` |
-| Before raising a PR | `/code-review BUGS,SECURITY` |
+| Before raising a PR | `ship-feature` |
 | Production error | `/incident` → `/debug` |
 | Need tests for existing code | `/test` |
 | Schema change | `/migrate` |
@@ -570,7 +582,7 @@ dotnet test                     ← all tests pass locally
 
 ```
 1. grill-me BEFORE coding anything non-trivial — prevent building the wrong thing
-2. /code-review BUGS,SECURITY before EVERY PR — no exceptions
+2. ship-feature before EVERY PR — runs /code-review, /security-review, /test-coverage, /pr-summary in sequence
 3. /incident before debugging production — saves significant time
 4. /migrate before applying any schema change — prevents data loss
 5. do-work Work Summary at end of every session — institutional memory
@@ -578,11 +590,32 @@ dotnet test                     ← all tests pass locally
 
 ---
 
-## 10. Setup for a New Project
+## 10. Setup for a New or Existing Project
 
-When starting a new project, open this workspace and update three things.
+Copy the `.claude/` folder into your project root, then configure it for your codebase.
 
-### Step 1 — Update CLAUDE.md Project Context
+```
+your-project/
+├── src/
+├── tests/
+├── YourProject.sln
+└── .claude/              ← copy from my-engineering-workspace
+    ├── CLAUDE.md
+    ├── rules/
+    ├── context/
+    ├── skills/
+    ├── agents/
+    └── commands/
+```
+
+Copy `docs/` alongside it if you want the role guides available in the project.
+
+### Step 1 — Open project in VSCode with Claude Code extension
+
+Claude Code auto-detects `.claude/CLAUDE.md` when you open the project root.
+Layer 1 (rules) and Layer 2 file-pattern skills activate immediately.
+
+### Step 2 — Update CLAUDE.md Project Context
 
 ```markdown
 ## Project Context
@@ -592,7 +625,16 @@ When starting a new project, open this workspace and update three things.
 - Specific conventions: [anything that differs from workspace defaults]
 ```
 
-### Step 2 — Add project-specific examples to dotnet-patterns skill
+### Step 3 — Run /onboard
+
+```
+/onboard
+```
+
+Claude explores the codebase, identifies existing conventions, and flags high-risk
+areas to approach carefully before making any changes.
+
+### Step 4 — Add project-specific examples to dotnet-patterns
 
 Add to `.claude/skills/dotnet-patterns/SKILL.md`:
 
@@ -602,22 +644,31 @@ Add to `.claude/skills/dotnet-patterns/SKILL.md`:
 [Include: DI module name, base classes, custom middleware, DB access pattern]
 ```
 
-### Step 3 — Run /onboard
+This is the most important step — it teaches Claude how code actually looks in your project.
+
+### Step 5 — Run grill-with-docs to build CONTEXT.md (if complex domain)
 
 ```
-/onboard
-[describe or paste the codebase structure and main components]
+grill-with-docs
+"I have an existing [domain] project. Help me build a shared language document."
 ```
 
-Claude builds a mental model of the project, identifies conventions,
-and flags high-risk areas to approach carefully.
+Result: a `CONTEXT.md` with domain glossary. Claude will use your project's
+terminology consistently from this point forward.
 
-### New project checklist
+### Step 6 — Run /security-review on existing auth endpoints (recommended)
+
+Catch security issues in existing code before adding new features.
+
+### Setup checklist
 
 ```
-□ CLAUDE.md Project Context section updated
-□ dotnet-patterns skill includes project-specific code examples
-□ /onboard completed
+□ .claude/ folder copied to project root
+□ Project opened in VSCode with Claude Code extension
+□ CLAUDE.md Project Context section filled in
+□ /onboard completed — Claude has a mental model of the codebase
+□ dotnet-patterns skill updated with 2–3 real code examples from this project
+□ grill-with-docs run — CONTEXT.md created (if domain is complex or new to you)
 □ /security-review run on existing auth endpoints
 □ /migrate run on all existing schema files
 □ /compliance run if the project handles personal data

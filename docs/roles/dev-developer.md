@@ -262,9 +262,9 @@ DEV fixes Critical and Warning before raising the PR.
 ```
 □ prd-to-plan completed — phases defined before writing any code
 □ do-work Work Summary written at end of each phase
-□ dotnet build passes — no warnings suppressed
-□ dotnet test passes — unit + integration
+□ Build passes — no warnings suppressed
+□ Tests pass — unit + integration
 □ /migrate run on every schema change
-□ /code-review BUGS,SECURITY — no Critical issues open
-□ PR description generated via /workflow Trigger B
+□ ship-feature run — no Critical findings from /code-review or /security-review
+□ PR description from /pr-summary ready to paste
 ```

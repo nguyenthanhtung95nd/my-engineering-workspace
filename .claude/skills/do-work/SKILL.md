@@ -1,11 +1,10 @@
 ---
 name: do-work
 description: >
-  Executes a unit of work end-to-end: plans the change, implements it, validates
-  via dotnet build and dotnet test (unit + integration), then produces a structured
-  Work Summary. Use when the user asks to implement a feature, fix a bug, refactor
-  code, or do any concrete development task. Works for both ASP.NET Core Web API
-  and AWS Lambda (.NET 8) projects.
+  Executes a unit of work end-to-end: plans the change, implements it,
+  validates via build and test for the detected stack, then produces a
+  structured Work Summary. Use when the user asks to implement a feature,
+  fix a bug, refactor code, or do any concrete development task.
 ---
 
 # Do Work
@@ -28,53 +27,41 @@ Otherwise, produce a concise plan before writing any code:
 Ask the user to confirm the plan before proceeding.
 If scope is ambiguous, ask one clarifying question.
 
-### 2. Implement
+### 2. Detect stack
 
-Make the changes identified in the plan:
-- Edit only the files required by the plan
+Scan the project root for indicator files, then use the matching build and test toolchain:
+
+| Indicator file | Stack | Build | Test |
+|----------------|-------|-------|------|
+| `*.csproj` / `*.sln` | .NET | `dotnet build` | `dotnet test` |
+| `package.json` | Node / TypeScript | `npm run build` | `npm test` |
+| `go.mod` | Go | `go build ./...` | `go test ./...` |
+| `requirements.txt` / `pyproject.toml` | Python | — | `pytest` |
+| `Cargo.toml` | Rust | `cargo build` | `cargo test` |
+
+For .NET: scan the project structure to locate the correct `.sln` or `.csproj` path before running.
+
+### 3. Implement
+
+Make only the changes identified in the plan:
 - Follow patterns from `@.claude/context/templates.md` and `@.claude/context/architecture.md`
 - Follow all rules in `@.claude/rules/`
 - No comments unless the WHY is non-obvious
 - No extra abstractions or features beyond what the plan specifies
 
-**Stack detection** — read existing files to determine which stack is in use:
-- `Function.cs` + `Autofac` → Lambda stack → follow Lambda patterns
-- `Program.cs` + `WebApplication.CreateBuilder` → ASP.NET Core → follow Web API patterns
+### 4. Build feedback loop
 
-### 3. Build feedback loop
-
-After implementing, run `dotnet build` for the affected project. Fix compilation errors before moving on.
-
-```bash
-# ASP.NET Core
-dotnet build {ProjectName}.sln -c Release
-
-# Lambda
-dotnet build lambda/{LambdaName}/{LambdaName}.sln -c Release
-```
-
+Run the build command for the detected stack. Fix compilation errors before moving on.
 Repeat until build is clean.
 
-### 4. Test feedback loop
+### 5. Test feedback loop
 
-Run unit tests for the affected project:
+Run the test command for the detected stack. Fix any failing tests.
+Repeat build → test loop until all tests pass.
 
-```bash
-# ASP.NET Core
-dotnet test {ProjectName}.Tests/{ProjectName}.Tests.csproj -c Release
+If integration tests are relevant, run them against the same project path.
 
-# Lambda
-dotnet test lambda/{LambdaName}/UnitTests/{ProjectName}.UnitTests.csproj -c Release
-```
-
-If integration tests are relevant:
-```bash
-dotnet test lambda/{LambdaName}/IntegrationTests/{ProjectName}.IntegrationTests.csproj -c Release
-```
-
-Fix any failing tests. Repeat build → test loop until all tests pass.
-
-### 5. Work Summary
+### 6. Work Summary
 
 End every do-work session with this structured summary:
 
