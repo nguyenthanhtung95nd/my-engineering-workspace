@@ -48,7 +48,7 @@ prd-to-plan       → plans/{feature}-plan.md
     ↓
 do-work           → code + tests + Work Summary
     ↓
-code-review       → /code-review BUGS,SECURITY
+ship-feature      → /code-review → /security-review → /test-coverage → /pr-summary
 ```
 
 ---
@@ -97,9 +97,15 @@ code-review       → /code-review BUGS,SECURITY
 | Skill | Trigger |
 |-------|---------|
 | `grill-me` | Sharpen a vague idea before writing PRD |
+| `grill-with-docs` | Grill + build CONTEXT.md + record ADRs |
 | `write-a-prd` | Create a structured PRD |
 | `prd-to-plan` | Turn PRD into phased implementation plan |
 | `do-work` | Implement feature or fix — build/test loop |
+| `ship-feature` | Pre-PR orchestrator — runs all 4 review steps |
+| `diagnose` | Hard or flaky bugs — 6-phase feedback loop |
+| `improve-codebase-architecture` | Find deepening opportunities post-feature |
+| `ba-analysis` | API analysis, data mapping, UAT, SQL |
+| `write-ba-docs` | BRD, FRD, User Stories for stakeholder sign-off |
 | `write-a-skill` | Create a new skill for this workspace |
 | `dotnet-patterns` | Auto-loads on .cs files |
 | `security-audit` | Auto-loads on auth/payment/data files |
@@ -111,9 +117,11 @@ code-review       → /code-review BUGS,SECURITY
 
 | Command | When |
 |---------|------|
-| `/code-review [MODE]` | Before every PR — BUGS, SECURITY, PERFORMANCE or combined |
-| `/review` | CCSE-based code review |
+| `/code-review` | Bugs + performance on all changed files |
 | `/security-review` | OWASP Top 10 deep dive |
+| `/test-coverage` | Coverage gap report for changed files |
+| `/pr-summary` | PR description from git diff |
+| `/review` | Structured code review with Constitutional Verification (paste code) |
 | `/generate` | Scaffold production-ready code |
 | `/debug` | Root cause analysis |
 | `/refactor` | Three-phase legacy refactoring |
@@ -128,7 +136,7 @@ code-review       → /code-review BUGS,SECURITY
 | `/devops` | Dockerfile, CI/CD, postmortem |
 | `/architect` | Architecture planning + ADRs |
 | `/saas` | SaaS product engineering |
-| `/workflow` | Daily task planning, PR description |
+| `/workflow` | Daily task planning |
 | `/team-standards` | Team norms, onboarding, quality gates |
 
 ---

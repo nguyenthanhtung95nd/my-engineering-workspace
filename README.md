@@ -615,15 +615,39 @@ Copy `docs/` alongside it if you want the role guides available in the project.
 Claude Code auto-detects `.claude/CLAUDE.md` when you open the project root.
 Layer 1 (rules) and Layer 2 file-pattern skills activate immediately.
 
-### Step 2 — Update CLAUDE.md Project Context
+### Step 2 — Update CLAUDE.md for your project
 
+Open `.claude/CLAUDE.md` and update these four areas:
+
+**A. Project Context** (bottom of file — always update this)
 ```markdown
 ## Project Context
 - Project: [name]
 - Domain: [business domain]
-- Stack: ASP.NET Core Web API / AWS Lambda (.NET 8)
 - Specific conventions: [anything that differs from workspace defaults]
 ```
+
+**B. Tech Stack** — remove the stack you are NOT using
+```markdown
+## Tech Stack
+
+### ASP.NET Core Web API     ← keep if using Web API, delete if not
+...
+
+### AWS Lambda               ← keep if using Lambda, delete if not
+...
+```
+
+**C. Who I Am** — update if the developer profile differs from the master workspace
+```markdown
+## Who I Am
+- Senior C#/.NET Backend Developer
+- Working on [your actual project type]
+```
+
+**D. @ directives** — leave as-is for the same .NET stacks.
+If you are adding a new stack (NestJS, Go, etc.), see [Section 11](#11-adding-a-new-stack)
+for how to add stack-specific rules and context files and update the `@` references.
 
 ### Step 3 — Run /onboard
 
