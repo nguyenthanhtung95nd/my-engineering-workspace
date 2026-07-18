@@ -89,6 +89,7 @@ claude-mastery/
     │   ├── prd-to-plan/                 ← Vertical slices → plans/{feature}-plan.md
     │   ├── do-work/                     ← Implement + build/test loop + Work Summary (stack-agnostic)
     │   ├── write-a-skill/               ← Create new skills for this workspace
+    │   ├── write-tech-docs/             ← Technical docs: Getting Started, Tutorial, How-to, Reference
     │   ├── ship-feature/                ← Pre-PR orchestrator: /code-review → /security-review → /test-coverage → /pr-summary
     │   ├── dotnet-patterns/             ← Auto-loads on .cs/.csproj files
     │   ├── security-audit/              ← Auto-loads on auth/payment/data files
@@ -577,6 +578,7 @@ Or run individually:
 | Build shared domain language + ADRs | `grill-with-docs` |
 | Hard or flaky bug | `diagnose` |
 | Find architecture improvement opportunities | `improve-codebase-architecture` |
+| Write technical documentation | `write-tech-docs` |
 
 ### Five rules to never break
 
