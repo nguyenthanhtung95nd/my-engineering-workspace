@@ -73,6 +73,7 @@ claude-mastery/
     │   ├── design-principles.md         ← SOLID, YAGNI, wrap third-party libs
     │   ├── comments.md                  ← Why not what, XML doc on public APIs
     │   ├── testing.md                   ← Testing pyramid, DAMP over DRY, no DB mocks
+    │   ├── safe-modification.md         ← Map before modifying, minimal-change, validate unchanged behavior
     │   └── checklist.md                 ← Pre-PR checklist
     │
     ├── context/                         ← Reference docs loaded via @ in CLAUDE.md
@@ -87,7 +88,10 @@ claude-mastery/
     │   ├── improve-codebase-architecture/ ← Deepening opportunities → HTML report
     │   ├── write-a-prd/                 ← Structured PRD → prd/{feature}-prd.md
     │   ├── prd-to-plan/                 ← Vertical slices → plans/{feature}-plan.md
+    │   ├── scratchpad/                  ← Working memory → scratchpad/{feature}-scratchpad.md (+ Recovery workflow)
     │   ├── do-work/                     ← Implement + build/test loop + Work Summary (stack-agnostic)
+    │   ├── build-prototype/             ← Throwaway prototype: UI (wireframe/multi-variant) or logic/state question
+    │   ├── resolving-merge-conflicts/   ← Resolve in-progress git merge/rebase conflicts safely
     │   ├── write-a-skill/               ← Create new skills for this workspace
     │   ├── write-tech-docs/             ← Technical docs: Getting Started, Tutorial, How-to, Reference
     │   ├── ship-feature/                ← Pre-PR orchestrator: /code-review → /security-review → /test-coverage → /pr-summary
@@ -181,6 +185,11 @@ write-a-prd    Structured PRD saved to prd/{feature}-prd.md.
 prd-to-plan    Vertical slices saved to plans/{feature}-plan.md.
                Each phase cuts end-to-end: schema + logic + tests.
     ↓
+scratchpad     Working memory saved to scratchpad/{feature}-scratchpad.md.
+               Map the system, catalog edge cases + perf paths + risks, draft ADRs,
+               track progress. Survives /clear and interrupted sessions.
+               Non-trivial changes only — skip for small clear tasks.
+    ↓
 do-work        Implement phase by phase.
                Loop: implement → build → test → fix → repeat (stack detected automatically).
                Ends with a structured Work Summary.
@@ -196,6 +205,7 @@ ship-feature   Run before every PR: /code-review → /security-review → /test-
 | A vague idea | `grill-me` |
 | A clear problem statement | `write-a-prd` |
 | A finished PRD | `prd-to-plan` |
+| A plan for a non-trivial change | `scratchpad` (then `do-work`) |
 | A plan or a small clear task | `do-work` |
 | Finished code, ready for PR | `ship-feature` |
 
@@ -565,6 +575,7 @@ Or run individually:
 | Vague idea | `grill-me` |
 | Need a spec | `write-a-prd` |
 | Need a phased plan | `prd-to-plan` |
+| Non-trivial change — need working memory | `scratchpad` |
 | Ready to implement | `do-work` |
 | Before raising a PR | `ship-feature` |
 | Production error | `/incident` → `/debug` |
@@ -575,6 +586,7 @@ Or run individually:
 | Design decision | `/architect` |
 | GDPR or compliance audit | `/compliance` |
 | Joining a new codebase | `/onboard` |
+| Resume an interrupted session | `scratchpad` (Recovery section) |
 | Build shared domain language + ADRs | `grill-with-docs` |
 | Hard or flaky bug | `diagnose` |
 | Find architecture improvement opportunities | `improve-codebase-architecture` |
@@ -627,7 +639,18 @@ Open `.claude/CLAUDE.md` and update these four areas:
 - Project: [name]
 - Domain: [business domain]
 - Specific conventions: [anything that differs from workspace defaults]
+
+### Project Boundaries        ← strongest guard against over-engineering
+**In-scope:** [...]
+**Out-of-scope:** [...]       ← what Claude must NOT add
+
+### Environment Facts         ← hard facts; auto-filled by /onboard (Step 3)
+| Tool / Service | Value |
 ```
+
+`Project Boundaries` (in-scope / out-of-scope) is the highest-leverage section for
+preventing Claude from solving a broader problem than the project has. Fill it in
+even for small projects. `Environment Facts` is populated automatically by `/onboard`.
 
 **B. Tech Stack** — remove the stack you are NOT using
 ```markdown
@@ -658,7 +681,9 @@ for how to add stack-specific rules and context files and update the `@` referen
 ```
 
 Claude explores the codebase, identifies existing conventions, and flags high-risk
-areas to approach carefully before making any changes.
+areas to approach carefully before making any changes. It also auto-populates the
+`Environment Facts` table in CLAUDE.md (PowerShell detection of .NET SDK, OS, Docker,
+DB endpoints), preserving the rest of the file.
 
 ### Step 4 — Add project-specific examples to dotnet-patterns
 
@@ -692,7 +717,8 @@ Catch security issues in existing code before adding new features.
 □ .claude/ folder copied to project root
 □ Project opened in VSCode with Claude Code extension
 □ CLAUDE.md Project Context section filled in
-□ /onboard completed — Claude has a mental model of the codebase
+□ CLAUDE.md Project Boundaries filled in (in-scope / out-of-scope)
+□ /onboard completed — Claude has a mental model of the codebase + Environment Facts populated
 □ dotnet-patterns skill updated with 2–3 real code examples from this project
 □ grill-with-docs run — CONTEXT.md created (if domain is complex or new to you)
 □ /security-review run on existing auth endpoints
@@ -719,11 +745,11 @@ Understanding this distinction is the key to extending the workspace correctly.
 **Stack-agnostic — keep as-is, never duplicate:**
 
 ```
-Pipeline skills      grill-me, write-a-prd, prd-to-plan, do-work, write-a-skill
+Pipeline skills      grill-me, write-a-prd, prd-to-plan, scratchpad, do-work, write-a-skill
 All agents           debugger, code-reviewer, docs-explorer, security-reviewer,
                      test-generator, code-explainer, performance-analyzer
 Role guides          docs/roles/ — all five roles, all workflow steps
-Core rules           structure.md, design-principles.md, comments.md
+Core rules           structure.md, design-principles.md, comments.md, safe-modification.md
 Universal commands   architect, agent, pipeline, compliance, onboard,
                      incident, workflow, team-standards
 ```
@@ -863,6 +889,7 @@ The rules that are always loaded regardless of stack (no comment needed):
 @.claude/rules/structure.md
 @.claude/rules/design-principles.md
 @.claude/rules/comments.md
+@.claude/rules/safe-modification.md
 @.claude/rules/checklist.md
 @.claude/rules/methods-and-classes.md
 ```

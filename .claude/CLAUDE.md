@@ -46,6 +46,8 @@ write-a-prd       → prd/{feature}-prd.md
     ↓
 prd-to-plan       → plans/{feature}-plan.md
     ↓
+scratchpad        → scratchpad/{feature}-scratchpad.md   (non-trivial changes only; skip for small tasks)
+    ↓
 do-work           → code + tests + Work Summary
     ↓
 ship-feature      → /code-review → /security-review → /test-coverage → /pr-summary
@@ -74,6 +76,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 @.claude/rules/design-principles.md
 @.claude/rules/comments.md
 @.claude/rules/testing.md
+@.claude/rules/safe-modification.md
 @.claude/rules/checklist.md
 
 ---
@@ -100,10 +103,13 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | `grill-with-docs` | Grill + build CONTEXT.md + record ADRs |
 | `write-a-prd` | Create a structured PRD |
 | `prd-to-plan` | Turn PRD into phased implementation plan |
+| `scratchpad` | Persistent working memory for a non-trivial change; also holds Recovery workflow |
 | `do-work` | Implement feature or fix — build/test loop |
 | `ship-feature` | Pre-PR orchestrator — runs all 4 review steps |
 | `diagnose` | Hard or flaky bugs — 6-phase feedback loop |
 | `improve-codebase-architecture` | Find deepening opportunities post-feature |
+| `build-prototype` | Throwaway prototype to answer a design question — UI (wireframe or multi-variant) or logic/state |
+| `resolving-merge-conflicts` | Resolve an in-progress git merge/rebase conflict safely |
 | `ba-analysis` | API analysis, data mapping, UAT, SQL |
 | `write-ba-docs` | BRD, FRD, User Stories for stakeholder sign-off |
 | `write-a-skill` | Create a new skill for this workspace |
@@ -142,6 +148,19 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 
 ---
 
+## Working Habits
+
+- **Separate planning from implementation.** Do not mix "decide the approach" and
+  "write the code" in one prompt. Use plan mode / `scratchpad` first, then implement.
+- **Context hygiene.** `/clear` when switching to a genuinely different task;
+  `/compact` when the current task is long. If answers start feeling too broad or
+  off-track, suspect context drift: `/clear`, reread rules, reload the scratchpad,
+  restate the goal.
+- **Living document.** Correct the same mistake twice → encode it once, at the
+  project level (this file or memory), instead of repeating it every session.
+- **Constraints over wording.** A strong prompt is specific, not long — state what
+  must change, what must not, and which trade-offs matter.
+
 ## What I Still Own
 - Business logic decisions
 - Domain model design
@@ -151,7 +170,34 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 - Team and process decisions
 
 ## Project Context
-- Update this section when working on a specific project
+
+> Fill this in per project (leave blank in the master template). These are
+> project-specific facts Claude cannot reliably infer — they carry the biggest
+> weight in the decision hierarchy.
+
 - Project: [name]
 - Domain: [business domain]
 - Specific conventions: [anything that differs from defaults above]
+
+### Project Boundaries
+The single strongest guard against over-engineering. List what the project is —
+and, just as importantly, what it is not.
+
+**In-scope:**
+- [feature / responsibility this project owns]
+
+**Out-of-scope:**
+- [things Claude must NOT add: no new services, no DB, no auth, no CI/CD, etc.]
+
+### Environment Facts
+Hard facts about the environment (not preferences). Prevents Claude from assuming
+hosted services or config layers that do not exist. Auto-populated by `/onboard`.
+
+| Tool / Service | Value |
+|----------------|-------|
+| .NET SDK | [version] |
+| OS / Shell | [e.g. Windows 11 / PowerShell] |
+| Database | [engine + host:port, local vs cloud] |
+| Cache / Queue | [Redis / Service Bus / SQS — host or "none"] |
+| Container runtime | [Docker version or "none"] |
+| Cloud / Region | [Azure/AWS region or "local only"] |

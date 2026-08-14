@@ -19,6 +19,10 @@ Execute a single, well-scoped unit of development work end-to-end.
 read it and use it. Skip replanning — proceed directly to Step 2.
 
 Otherwise, produce a concise plan before writing any code:
+- **Map** — which files own the current behavior, which helpers/services to reuse,
+  which layers stay untouched, and the safest insertion point. Seeing files is not
+  understanding the system — trace the flow before deciding where code belongs.
+  (See `@.claude/rules/safe-modification.md`.)
 - **Problem** — what is broken or missing and why it matters
 - **Root cause** — the underlying technical reason (if a bug)
 - **Approach** — what files/classes will change and how
@@ -26,6 +30,9 @@ Otherwise, produce a concise plan before writing any code:
 
 Ask the user to confirm the plan before proceeding.
 If scope is ambiguous, ask one clarifying question.
+
+For non-trivial changes, prefer running the `scratchpad` skill first and reading
+`scratchpad/{feature}-scratchpad.md` here instead of replanning.
 
 ### 2. Detect stack
 
@@ -61,7 +68,15 @@ Repeat build → test loop until all tests pass.
 
 If integration tests are relevant, run them against the same project path.
 
-### 6. Work Summary
+### 6. Validate unchanged behavior
+
+Before writing the summary, list the behaviors that must remain unchanged after this
+change and explain how the implementation preserves each. Then self-audit the diff
+for silent technical debt: duplicated logic, bypassed shared utilities, unnecessary
+abstractions, or anywhere the code does more than the plan required. If the
+preservation explanation is vague or the audit finds debt, fix it before summarizing.
+
+### 7. Work Summary
 
 End every do-work session with this structured summary:
 

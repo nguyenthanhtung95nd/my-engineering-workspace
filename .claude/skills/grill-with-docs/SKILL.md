@@ -57,6 +57,14 @@ Only offer to create an ADR when all three are true:
 
 If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
 
+### Promote draft ADRs from the scratchpad
+
+If a `scratchpad/{feature}-scratchpad.md` exists, check its Architecture Decision Log.
+When a draft ADR there has moved to **Decided** and passes the three-part test above,
+promote it to an official ADR in `docs/adr/` using [ADR-FORMAT.md](./ADR-FORMAT.md),
+then replace the draft in the scratchpad with a one-line pointer to the promoted file.
+Keep a single source of truth — do not maintain the full ADR in both places.
+
 ## Session complete
 
 When all branches of the design tree are resolved:

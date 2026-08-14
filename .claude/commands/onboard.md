@@ -74,6 +74,14 @@ Note areas with no test coverage, `TODO` / `HACK` / `FIXME` comments, and code m
 **Step 5 — Convention extraction**
 Read three to five existing implementations of the same pattern — three Repository classes, three Controller actions, three Service methods. Extract what they all have in common — that is the team convention. Note what varies — that is either inconsistency or intentional variation.
 
+**Step 6 — Environment Facts (write into CLAUDE.md)**
+Detect the real environment and record it in the `### Environment Facts` table under `## Project Context` in `.claude/CLAUDE.md`. **Preserve all other content in the file — only fill/update that table.**
+
+- Use **PowerShell commands only** (this session runs in PowerShell, not bash).
+- Detect only tools relevant to this project: OS, PowerShell version, .NET SDK (`dotnet --version`), Node.js if a `package.json` exists, Docker (`docker --version`), and the database/cache/queue endpoints found in config (`appsettings*.json`, `.env`, CDK/IaC).
+- Do **not** scan for unrelated toolchains (Go, Rust, Ruby, yarn, etc.).
+- Environment facts are hard facts, not preferences — if a value cannot be determined, write "unknown" rather than guessing.
+
 ## Output Format
 
 ### System Overview
