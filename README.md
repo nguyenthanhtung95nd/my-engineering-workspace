@@ -283,6 +283,10 @@ You can be SA in the morning and DEV in the afternoon — the workspace adapts.
 
 ## 6. Real-World Walkthrough
 
+> Want a step-by-step, greenfield "empty folder → shipped" tutorial instead of this
+> role-by-role summary? See **[docs/HOW-TO-BUILD-A-PROJECT.md](docs/HOW-TO-BUILD-A-PROJECT.md)**
+> — a language-agnostic zero-to-production build guide mapped onto the pipeline.
+
 **Project:** Product CRUD Lambda triggered by API Gateway, MySQL database,
 source code on GitLab, deployed via AWS CDK.
 
@@ -572,6 +576,7 @@ Or run individually:
 
 | Situation | Action |
 |-----------|--------|
+| Starting a project from scratch (zero → production) | [docs/HOW-TO-BUILD-A-PROJECT.md](docs/HOW-TO-BUILD-A-PROJECT.md) |
 | Vague idea | `grill-me` |
 | Need a spec | `write-a-prd` |
 | Need a phased plan | `prd-to-plan` |
