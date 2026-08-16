@@ -114,6 +114,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | `write-ba-docs` | BRD, FRD, User Stories for stakeholder sign-off |
 | `write-a-skill` | Create a new skill for this workspace |
 | `write-tech-docs` | Write technical docs (Getting Started, Tutorial, How-to, Reference) |
+| `self-learning` | Study a course/book/mindset with active recall, teach-back & spaced review (`/self-learning <topic>`) |
 | `dotnet-patterns` | Auto-loads on .cs files |
 | `security-audit` | Auto-loads on auth/payment/data files |
 | `architecture-decision` | Auto-loads on design discussions |

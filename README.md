@@ -94,6 +94,7 @@ claude-mastery/
     │   ├── resolving-merge-conflicts/   ← Resolve in-progress git merge/rebase conflicts safely
     │   ├── write-a-skill/               ← Create new skills for this workspace
     │   ├── write-tech-docs/             ← Technical docs: Getting Started, Tutorial, How-to, Reference
+    │   ├── self-learning/               ← Study a course/book/mindset: active recall, teach-back, spaced review
     │   ├── ship-feature/                ← Pre-PR orchestrator: /code-review → /security-review → /test-coverage → /pr-summary
     │   ├── dotnet-patterns/             ← Auto-loads on .cs/.csproj files
     │   ├── security-audit/              ← Auto-loads on auth/payment/data files
@@ -596,6 +597,7 @@ Or run individually:
 | Hard or flaky bug | `diagnose` |
 | Find architecture improvement opportunities | `improve-codebase-architecture` |
 | Write technical documentation | `write-tech-docs` |
+| Learn a course / book / mindset and retain it | `self-learning` |
 
 ### Five rules to never break
 
