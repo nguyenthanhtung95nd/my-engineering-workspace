@@ -6,14 +6,7 @@
       "Bash(git:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet run:*)",
-      "Bash(pdftotext -layout \"best-practices-claude-code-production-code-ai.pdf\" book.txt)",
-      "Bash(python -c \"import json;json.load\\(open\\('.claude/settings.json'\\)\\);print\\('settings.json OK'\\)\")",
-      "Bash(pdftotext -layout \"mastering-claude-ai-prompt-engineering-automation-workflows.pdf\" book2.txt)",
-      "Bash(grep -nE \"^\\(Chapter \\)?[0-9]{1,2}\\\\. \\(Prompting Fundamentals|Context Engineering|Projects|Memory|Artifacts|Introduction to Automation|MCP|Coding with Claude|Claude Code|Debugging|The Claude API|Security|Team Collaboration|Trust|Building Your Own\\)\" book2.txt)",
-      "Bash(awk -F: '$1>100')",
-      "Bash(awk -F: '$1>10300')",
-      "Bash(cd \"c:\\\\PersonalDocuments\\\\Project_Practices\\\\my-engineering-workspace\\\\book\" && rm -f book.txt book2.txt && echo \"Cleaned temp extractions.\" && ls -1)"
+      "Bash(dotnet run:*)"
     ],
     "deny": [
       "Bash(git push:*)",
@@ -25,9 +18,6 @@
       "Bash(*Stop-Process*)",
       "Bash(pkill:*)",
       "Bash(kill:*)"
-    ],
-    "additionalDirectories": [
-      "c:\\PersonalDocuments\\Project_Practices\\my-engineering-workspace\\book"
     ]
   },
   "hooks": {
