@@ -109,6 +109,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | `diagnose` | Hard or flaky bugs — 6-phase feedback loop |
 | `improve-codebase-architecture` | Find deepening opportunities post-feature |
 | `build-prototype` | Throwaway prototype to answer a design question — UI (wireframe or multi-variant) or logic/state |
+| `automate-e2e-self-testing` | **Frontend only** — set up or audit a self-testing E2E loop (Playwright + local guardrails) so the agent verifies its own UI before human review |
 | `resolving-merge-conflicts` | Resolve an in-progress git merge/rebase conflict safely |
 | `ba-analysis` | API analysis, data mapping, UAT, SQL |
 | `write-ba-docs` | BRD, FRD, User Stories for stakeholder sign-off |

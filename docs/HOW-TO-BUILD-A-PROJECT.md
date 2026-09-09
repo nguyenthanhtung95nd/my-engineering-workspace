@@ -149,6 +149,8 @@ This is where the workspace goes **beyond** the beginner tutorial. Before every 
 
 - [`ship-feature`](../.claude/skills/ship-feature/SKILL.md) → runs `/code-review` →
   `/security-review` → `/test-coverage` → `/pr-summary`. Stops at Critical findings.
+- **Frontend projects:** [`automate-e2e-self-testing`](../.claude/skills/automate-e2e-self-testing/SKILL.md)
+  → stand up (or audit) a Playwright self-testing loop so the agent verifies its own UI before review.
 - `/migrate` before applying any schema change · `/compliance` if it handles personal data.
 - `/devops` for Dockerfile / CI-CD · `/perf` on any changed hot path.
 - After deploy: watch the first 30 minutes; `/incident` immediately if error rate spikes

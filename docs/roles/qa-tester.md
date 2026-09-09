@@ -15,6 +15,7 @@
 | `/perf` | Performance test targets and bottleneck analysis |
 | `/debug` | Root cause analysis when a test fails unexpectedly |
 | `diagnose` | Hard or flaky test failures — structured feedback loop to find the root cause |
+| `automate-e2e-self-testing` | **Frontend UI only** — set up or audit a Playwright self-testing E2E loop with local guardrails so the agent verifies its own UI before review |
 
 ---
 

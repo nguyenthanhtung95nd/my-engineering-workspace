@@ -91,6 +91,7 @@ claude-mastery/
     │   ├── scratchpad/                  ← Working memory → scratchpad/{feature}-scratchpad.md (+ Recovery workflow)
     │   ├── do-work/                     ← Implement + build/test loop + Work Summary (stack-agnostic)
     │   ├── build-prototype/             ← Throwaway prototype: UI (wireframe/multi-variant) or logic/state question
+    │   ├── automate-e2e-self-testing/   ← Frontend: self-testing E2E loop (Playwright + guardrails) — bootstrap or audit
     │   ├── resolving-merge-conflicts/   ← Resolve in-progress git merge/rebase conflicts safely
     │   ├── write-a-skill/               ← Create new skills for this workspace
     │   ├── write-tech-docs/             ← Technical docs: Getting Started, Tutorial, How-to, Reference
@@ -586,6 +587,7 @@ Or run individually:
 | Before raising a PR | `ship-feature` |
 | Production error | `/incident` → `/debug` |
 | Need tests for existing code | `/test` |
+| Set up / audit a self-testing E2E loop (frontend) | `automate-e2e-self-testing` |
 | Schema change | `/migrate` |
 | Library or SDK question | `docs-explorer` auto-invokes |
 | Slow endpoint | `/perf` |
