@@ -11,6 +11,7 @@
 |------|---------|
 | `/test` | Generate xUnit test suite from existing implementation code |
 | `/security-review` | OWASP-based security test scenarios |
+| `authorization` | Audit the access model with its CHECKLIST — coverage gaps, IDOR, tenant boundaries |
 | `/code-review BUGS` | Identify logic errors and edge cases |
 | `/perf` | Performance test targets and bottleneck analysis |
 | `/debug` | Root cause analysis when a test fails unexpectedly |

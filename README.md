@@ -70,6 +70,7 @@ claude-mastery/
     │   ├── methods-and-classes.md       ← Max 3 params, no bool args, DI lifetimes
     │   ├── async.md                     ← No .Result/.Wait(), CancellationToken end-to-end
     │   ├── error-handling.md            ← Result<T> (Web API), Lambda batch failures
+    │   ├── authorization.md             ← Deny by default, coverage, authority behind the request
     │   ├── design-principles.md         ← SOLID, YAGNI, wrap third-party libs
     │   ├── comments.md                  ← Why not what, XML doc on public APIs
     │   ├── testing.md                   ← Testing pyramid, DAMP over DRY, no DB mocks
@@ -97,6 +98,7 @@ claude-mastery/
     │   ├── write-tech-docs/             ← Technical docs: Getting Started, Tutorial, How-to, Reference
     │   ├── self-learning/               ← Study a course/book/mindset: active recall, teach-back, spaced review
     │   ├── ship-feature/                ← Pre-PR orchestrator: /code-review → /security-review → /test-coverage → /pr-summary
+    │   ├── authorization/               ← Access control: diagnose → model → enforce → generate → review
     │   ├── dotnet-patterns/             ← Auto-loads on .cs/.csproj files
     │   ├── security-audit/              ← Auto-loads on auth/payment/data files
     │   └── architecture-decision/       ← Auto-loads on design discussions
@@ -106,6 +108,7 @@ claude-mastery/
     │   ├── code-reviewer.md             ← Critical/Warning/Suggestion with file:line refs
     │   ├── docs-explorer.md             ← Live docs via Context7 MCP, never training data
     │   ├── security-reviewer.md         ← OWASP expert, attacker mindset
+    │   ├── authorization-reviewer.md    ← Access model, tenant boundaries, delegation, coverage
     │   ├── test-generator.md            ← xUnit coverage: happy/validation/error paths
     │   ├── code-explainer.md            ← Legacy code understanding
     │   └── performance-analyzer.md      ← N+1, slow queries, memory issues
@@ -148,6 +151,7 @@ Layer 2 — Context Aware
   skills/ load by file pattern (VSCode extension) or Claude's judgment.
   Open a .cs / .csproj file   → dotnet-patterns loads (file pattern match).
   Open a Controller/Auth file  → security-audit loads (file pattern match).
+  Open an Auth/Permission file → authorization loads (file pattern match).
   Ask about architecture       → architecture-decision loads (Claude judgment).
   Requires VSCode extension for file-pattern matching to work.
 
@@ -587,6 +591,8 @@ Or run individually:
 | Before raising a PR | `ship-feature` |
 | Production error | `/incident` → `/debug` |
 | Need tests for existing code | `/test` |
+| "Who can access this, and why?" — access model no longer fits | `authorization` |
+| Multi-tenant boundary, delegation, or AI-agent permissions | `authorization` |
 | Set up / audit a self-testing E2E loop (frontend) | `automate-e2e-self-testing` |
 | Schema change | `/migrate` |
 | Library or SDK question | `docs-explorer` auto-invokes |

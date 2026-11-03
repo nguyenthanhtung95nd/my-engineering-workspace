@@ -14,6 +14,7 @@
 | `write-a-prd` | Document the architectural decision and the options considered |
 | `/architect` | Trade-off analysis, right-sized recommendation, ADR generation |
 | `/compliance` | Verify security and regulatory requirements upfront |
+| `authorization` | Choose the access model and place enforcement points — before it is expensive to change |
 | `improve-codebase-architecture` | Find deepening opportunities — generates HTML report with before/after diagrams |
 
 ---

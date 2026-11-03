@@ -73,6 +73,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 @.claude/rules/methods-and-classes.md
 @.claude/rules/async.md
 @.claude/rules/error-handling.md
+@.claude/rules/authorization.md
 @.claude/rules/design-principles.md
 @.claude/rules/comments.md
 @.claude/rules/testing.md
@@ -89,6 +90,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | After writing or modifying any code | **code-reviewer** |
 | Any question about a library, framework, or SDK | **docs-explorer** |
 | Security review needed | **security-reviewer** |
+| Access-control model, tenant boundaries, delegation, agent permissions | **authorization-reviewer** |
 | Need tests for existing code | **test-generator** |
 | Unfamiliar or legacy code | **code-explainer** |
 | Slow endpoint or N+1 suspected | **performance-analyzer** |
@@ -116,6 +118,7 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | `write-a-skill` | Create a new skill for this workspace |
 | `write-tech-docs` | Write technical docs (Getting Started, Tutorial, How-to, Reference) |
 | `self-learning` | Study a course/book/mindset with active recall, teach-back & spaced review (`/self-learning <topic>`) |
+| `authorization` | Diagnose / design / generate / review access control — auto-loads on auth, permission, policy, tenant files |
 | `dotnet-patterns` | Auto-loads on .cs files |
 | `security-audit` | Auto-loads on auth/payment/data files |
 | `architecture-decision` | Auto-loads on design discussions |

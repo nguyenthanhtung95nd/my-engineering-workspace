@@ -16,6 +16,7 @@
 | `/debug` | Root cause analysis when something breaks |
 | `diagnose` | Hard or flaky bugs — structured feedback loop, reproduce, hypothesise, fix |
 | `/migrate` | Validate schema changes before applying |
+| `authorization` | Implement access decisions that carry their reason — and test both permit and deny |
 | `improve-codebase-architecture` | Find deepening opportunities after a feature ships |
 
 ---

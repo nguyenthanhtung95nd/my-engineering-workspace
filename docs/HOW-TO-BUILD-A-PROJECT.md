@@ -89,6 +89,13 @@ Then capture it: [`write-a-prd`](../.claude/skills/write-a-prd/SKILL.md) →
 > Task API v1 out-of-scope example: no auth, no multi-user, no due-date reminders, no
 > UI - just a REST API with an in-memory or single-table store.
 
+**Decide the access model here, not later.** Even when v1 has no auth, write down who will
+be allowed to do what, and whether tenancy is a real boundary or just a column. Retrofitting
+an access model costs far more than choosing one, and "we always filter by `TenantId`" is a
+convention, not a boundary. → [`authorization`](../.claude/skills/authorization/SKILL.md)
+(Step 0 → Diagnose → Model). Record the choice as an ADR with the line that matters most:
+*what would make us revisit this*.
+
 ## Phase 3 - Slice into buildable phases
 
 [`prd-to-plan`](../.claude/skills/prd-to-plan/SKILL.md) → `plans/{feature}-plan.md`.
@@ -151,6 +158,10 @@ This is where the workspace goes **beyond** the beginner tutorial. Before every 
   `/security-review` → `/test-coverage` → `/pr-summary`. Stops at Critical findings.
 - **Frontend projects:** [`automate-e2e-self-testing`](../.claude/skills/automate-e2e-self-testing/SKILL.md)
   → stand up (or audit) a Playwright self-testing loop so the agent verifies its own UI before review.
+- **Anything that returns someone's data:** [`authorization`](../.claude/skills/authorization/SKILL.md)
+  → audit with its CHECKLIST. The highest-yield check is **coverage**: middleware guards HTTP
+  only, so background jobs, scheduled tasks, queue consumers and service-to-service calls are
+  where rules get silently bypassed. Every rule needs a permit **and** a deny test.
 - `/migrate` before applying any schema change · `/compliance` if it handles personal data.
 - `/devops` for Dockerfile / CI-CD · `/perf` on any changed hot path.
 - After deploy: watch the first 30 minutes; `/incident` immediately if error rate spikes
