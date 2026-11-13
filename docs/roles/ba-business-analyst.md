@@ -13,7 +13,8 @@
 | `grill-me` | Surface business ambiguities one question at a time before writing anything |
 | `grill-with-docs` | Same as grill-me + builds shared domain language (CONTEXT.md) + records ADRs |
 | `write-ba-docs` | Write BRD, FRD, and User Stories for stakeholder review and sign-off |
-| `ba-analysis` | API analysis, data mapping, UAT test cases, SQL, validation rules |
+| `ba-analysis` | API analysis, data mapping, UAT test cases (business sign-off level), SQL, validation rules |
+| `generate-manual-test` | Execution-ready manual test matrix from a story. Run it on draft AC: every Open Question it raises is an AC gap to close before DEV starts |
 | `/impact` | Structured impact & gap analysis when a requirement or rule is changing |
 
 ---
@@ -25,7 +26,8 @@
 2. write-ba-docs   → BRD / FRD / User Stories → stakeholder sign-off
 3. ba-analysis     → Deep-dive on API, data, UAT, or validation when needed
 4. /impact         → Run if this feature touches an existing system or business rule
-5. Hand to DEV     → Documents are complete, unambiguous, signed off
+5. generate-manual-test → Dry-run the AC: fix every Open Question in the story, not in the matrix
+6. Hand to DEV     → Documents are complete, unambiguous, signed off
 ```
 
 ---

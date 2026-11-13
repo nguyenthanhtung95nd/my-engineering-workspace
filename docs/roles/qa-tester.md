@@ -9,7 +9,10 @@
 
 | Tool | Purpose |
 |------|---------|
-| `/test` | Generate xUnit test suite from existing implementation code |
+| `generate-manual-test` | Manual / UAT test case matrix from the ticket — written from the tester's seat, never from the code. Open Questions go back to the BA |
+| `/test` | Generate xUnit test suite from existing implementation code (quick inner loop) |
+| `unit-testing-csharp` | Unit tests from an approved Given/When/Then contract (TDD or characterization), and **review mode**: 4 gates + 0/1/2 scorecard on any suite, coverage measured from a report |
+| `integration-testing-aspnetcore` | **ASP.NET Core only** — endpoint tests through the real pipeline: `WebApplicationFactory` + Testcontainers + WireMock, tier by risk, flaky-suite diagnosis. Lambda projects stay on `/test` + Testcontainers fixtures |
 | `/security-review` | OWASP-based security test scenarios |
 | `authorization` | Audit the access model with its CHECKLIST — coverage gaps, IDOR, tenant boundaries |
 | `/code-review BUGS` | Identify logic errors and edge cases |
@@ -23,13 +26,24 @@
 ## Workflow
 
 ```
-1. Read PRD AC        → AC are the source of truth for test cases
-2. /test              → Generate xUnit tests from implementation code
-3. /security-review   → OWASP scenarios: IDOR, injection, auth bypass
-4. /perf              → Performance targets: p95 latency, DB query cost
-5. /code-review BUGS  → Logic errors the developer may have missed
-6. Regression         → Before every release, /agent audit of changed files
+1. Read PRD AC            → AC are the source of truth for test cases
+2. generate-manual-test   → Manual matrix from the ticket; Open Questions back to BA before DEV starts
+3. /test                  → Generate xUnit tests from implementation code
+   unit-testing-csharp    → When a contract exists (TDD) or legacy code needs characterization
+4. integration-testing-aspnetcore → Endpoint tests for ASP.NET Core APIs (real DB in a container)
+5. /security-review       → OWASP scenarios: IDOR, injection, auth bypass
+6. /perf                  → Performance targets: p95 latency, DB query cost
+7. /code-review BUGS      → Logic errors the developer may have missed
+8. unit-testing-csharp (review) → Gates + scorecard on the PR's test suite before approving
+9. Regression             → Before every release: execute the manual matrix, /agent audit of changed files
 ```
+
+> **Which testing tool when:** `/test` for a fast suite on an existing class.
+> `unit-testing-csharp` when you want a contract approved first, or a scored review of a
+> suite someone else wrote. `integration-testing-aspnetcore` for anything that must go
+> through routing, binding, validation, authorization and a real database.
+> `generate-manual-test` for what a human executes. Workspace conventions in
+> `rules/testing.md` (NSubstitute / Moq, `Result<T>`) take precedence over the skill rulebooks.
 
 ---
 
@@ -261,8 +275,11 @@ Performance rating: acceptable for launch. Monitor at 100K rows.
 ## QA Checklist
 
 ```
+□ generate-manual-test run — every AC is a Test Case, an Open Question, or an Uncovered Requirement (none dropped)
 □ /test run — coverage table shows all methods have happy + failure cases
+□ unit-testing-csharp review — no gate BLOCKED without a named reason; scorecard deductions cite file:line
 □ Integration tests cover soft-delete and pagination exclusion
+□ Integration suite: three identical runs by test identity, Docker requirement documented, no fixed ports
 □ /security-review run — IDOR and role enforcement scenarios tested
 □ /perf checked — index usage verified, p95 target defined
 □ All AC from PRD have a corresponding test case

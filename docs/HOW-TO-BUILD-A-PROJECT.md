@@ -132,6 +132,17 @@ Run and test after **every** meaningful change so a failure maps to one change. 
 bug is hard or flaky, escalate to [`diagnose`](../.claude/skills/diagnose/SKILL.md).
 Do not let the agent implement a large multi-part feature in one unreviewed pass.
 
+**Tests are a contract, not a by-product.** For behaviour that matters, approve a
+Given/When/Then table before the agent writes either the test or the code, then let the
+test go red before it goes green. In .NET that is
+[`unit-testing-csharp`](../.claude/skills/unit-testing-csharp/SKILL.md) for a class and
+[`integration-testing-aspnetcore`](../.claude/skills/integration-testing-aspnetcore/SKILL.md)
+for an HTTP endpoint (real database in a container, external APIs faked, authorization kept
+real). Other stacks: follow the same contract-first shape with that stack's tooling, and add
+a `unit-testing-{stack}` skill per [README §11](../README.md#11-adding-a-new-stack).
+For what a human will execute by hand, [`generate-manual-test`](../.claude/skills/generate-manual-test/SKILL.md)
+turns the ticket into a matrix without reading the implementation.
+
 ## Phase 6 - Add features iteratively
 
 Layer features one at a time. Two book lessons matter most here:

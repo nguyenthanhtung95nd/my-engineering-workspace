@@ -92,6 +92,9 @@ claude-mastery/
     │   ├── scratchpad/                  ← Working memory → scratchpad/{feature}-scratchpad.md (+ Recovery workflow)
     │   ├── do-work/                     ← Implement + build/test loop + Work Summary (stack-agnostic)
     │   ├── build-prototype/             ← Throwaway prototype: UI (wireframe/multi-variant) or logic/state question
+    │   ├── unit-testing-csharp/         ← C# unit tests from an approved contract: TDD / characterization, review gates + scorecard
+    │   ├── integration-testing-aspnetcore/ ← ASP.NET Core integration tests: WebApplicationFactory + Testcontainers + WireMock
+    │   ├── generate-manual-test/        ← Manual / UAT test case matrix from a ticket, written from the tester's seat
     │   ├── automate-e2e-self-testing/   ← Frontend: self-testing E2E loop (Playwright + guardrails) — bootstrap or audit
     │   ├── resolving-merge-conflicts/   ← Resolve in-progress git merge/rebase conflicts safely
     │   ├── write-a-skill/               ← Create new skills for this workspace
@@ -315,8 +318,11 @@ DEV    → prd-to-plan: 6 phases (skeleton → repository → service → routin
          diagnose: for hard or flaky bugs that cannot be reproduced with /debug alone
          See: docs/roles/dev-developer.md
 
-QA     → /test: xUnit suite — happy path, validation, soft delete, pagination
+QA     → generate-manual-test: manual test matrix from the story AC, open questions back to BA
+         /test: xUnit suite — happy path, validation, soft delete, pagination
+         unit-testing-csharp (review): gates + scorecard on the generated suite
          Integration tests: Testcontainers MySQL, soft delete exclusion verified
+         (integration-testing-aspnetcore for ASP.NET Core HTTP endpoints)
          /security-review: IDOR and Viewer role enforcement test scenarios
          /perf: EXPLAIN confirms index seek on list query
          See: docs/roles/qa-tester.md
@@ -385,6 +391,7 @@ DEV  → For each story:
 
 QA   → For each story:
        Review AC for testability
+       generate-manual-test on the draft AC → every Open Question is an AC gap
        Flag missing edge cases or unclear error scenarios
 
 DevOps → Flag any story that requires infrastructure changes
@@ -422,6 +429,8 @@ Day N — Story starts
 
   QA   → While DEV is implementing:
          /test on each completed class → build test suite in parallel
+         integration-testing-aspnetcore on each new endpoint (ASP.NET Core)
+         generate-manual-test → manual matrix ready before the PR lands
          /security-review on auth/data endpoints
          Raise issues early — not after the full story is "done"
 
@@ -433,6 +442,8 @@ Day N+1 or N+2 — Story ready for review
 
   DEV  → ship-feature → fix all Critical findings → raise PR
   QA   → Review PR: run tests locally, verify AC point by point
+         unit-testing-csharp (review) on the PR's test suite → gates + scorecard
+         Execute the manual matrix on staging, fill Actual Result
   SA   → Architecture review on PR if story touched core design
   DevOps → Verify CI passes: build + unit test + integration test all green
            Confirm staging deployment succeeded
@@ -590,7 +601,11 @@ Or run individually:
 | Ready to implement | `do-work` |
 | Before raising a PR | `ship-feature` |
 | Production error | `/incident` → `/debug` |
-| Need tests for existing code | `/test` |
+| Need tests for existing code (quick) | `/test` |
+| Tests from an approved contract — TDD, or characterize legacy code | `unit-testing-csharp` |
+| Review / score an existing test suite, measure coverage | `unit-testing-csharp` (review mode) |
+| Integration tests for an ASP.NET Core endpoint, or a flaky integration suite | `integration-testing-aspnetcore` |
+| Manual / UAT test cases from a ticket | `generate-manual-test` |
 | "Who can access this, and why?" — access model no longer fits | `authorization` |
 | Multi-tenant boundary, delegation, or AI-agent permissions | `authorization` |
 | Set up / audit a self-testing E2E loop (frontend) | `automate-e2e-self-testing` |
@@ -761,6 +776,7 @@ Understanding this distinction is the key to extending the workspace correctly.
 
 ```
 Pipeline skills      grill-me, write-a-prd, prd-to-plan, scratchpad, do-work, write-a-skill
+QA skills            generate-manual-test (reads the ticket, never the code)
 All agents           debugger, code-reviewer, docs-explorer, security-reviewer,
                      test-generator, code-explainer, performance-analyzer
 Role guides          docs/roles/ — all five roles, all workflow steps
@@ -775,6 +791,8 @@ Universal commands   architect, agent, pipeline, compliance, onboard,
 rules/               naming, async, error-handling, methods-and-classes, testing
 context/             architecture, templates, testing
 skills/              {stack}-patterns/ (auto-loads on relevant file types)
+                     unit-testing-csharp, integration-testing-aspnetcore (.NET only —
+                     a new stack needs its own unit-testing-{stack} / integration-testing-{stack})
 commands/            generate, review, security-review, debug, refactor,
                      test, migrate, perf, devops, saas
 ```

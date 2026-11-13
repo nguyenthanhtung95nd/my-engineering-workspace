@@ -53,6 +53,23 @@ do-work           → code + tests + Work Summary
 ship-feature      → /code-review → /security-review → /test-coverage → /pr-summary
 ```
 
+### Testing — which tool when
+
+| Need | Use |
+|------|-----|
+| Quick xUnit suite for an existing class (daily inner loop) | `/test` or **test-generator** |
+| Tests from an approved Given/When/Then contract — TDD for new behavior, or characterization of legacy code with `?` rows | `unit-testing-csharp` |
+| Review or score an existing unit test suite (gates + scorecard), or measured coverage | `unit-testing-csharp` (review mode) |
+| ASP.NET Core endpoint tests through the real pipeline — `WebApplicationFactory` + Testcontainers + WireMock, tier decision, flaky-suite diagnosis | `integration-testing-aspnetcore` |
+| Manual / UAT test case matrix for QA from a ticket | `generate-manual-test` |
+| Coverage gap report on changed files before a PR | `/test-coverage` |
+
+**Precedence.** The two testing skills carry their own rulebooks. Where a rulebook default
+differs from this workspace (`rules/testing.md`, `context/testing.md`: NSubstitute / Moq
+for mocking, `Result<T>` failures instead of exceptions, the xUnit version the project
+already uses), the workspace convention wins and the skill adapts. Skill rulebooks fill
+gaps; they do not override project rules.
+
 ---
 
 ## Architecture Reference
@@ -111,6 +128,9 @@ ship-feature      → /code-review → /security-review → /test-coverage → /
 | `diagnose` | Hard or flaky bugs — 6-phase feedback loop |
 | `improve-codebase-architecture` | Find deepening opportunities post-feature |
 | `build-prototype` | Throwaway prototype to answer a design question — UI (wireframe or multi-variant) or logic/state |
+| `unit-testing-csharp` | Write or review C# unit tests from an approved Given/When/Then contract — TDD or characterization; 4 gates + 0/1/2 scorecard; coverage measured, never estimated |
+| `integration-testing-aspnetcore` | Write or review ASP.NET Core integration tests — `WebApplicationFactory` + Testcontainers + WireMock, real authorization behind a test auth handler, tier by risk, Docker detected only when needed |
+| `generate-manual-test` | Execution-ready manual / UAT test case matrix from a ticket, written from the tester's seat — never from the implementation |
 | `automate-e2e-self-testing` | **Frontend only** — set up or audit a self-testing E2E loop (Playwright + local guardrails) so the agent verifies its own UI before human review |
 | `resolving-merge-conflicts` | Resolve an in-progress git merge/rebase conflict safely |
 | `ba-analysis` | API analysis, data mapping, UAT, SQL |

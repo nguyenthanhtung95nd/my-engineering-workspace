@@ -12,6 +12,8 @@
 | `grill-me` | Clarify implementation approach before writing any code |
 | `prd-to-plan` | Slice the PRD into phased vertical slices |
 | `do-work` | Implement phase by phase — build/test loop, Work Summary |
+| `unit-testing-csharp` | TDD from an approved contract for new behavior; characterization (`?` rows) before touching legacy code |
+| `integration-testing-aspnetcore` | **ASP.NET Core** — endpoint tests via `WebApplicationFactory` + Testcontainers; keeps authorization real behind a test auth handler |
 | `/code-review BUGS,SECURITY` | Final gate before raising a PR |
 | `/debug` | Root cause analysis when something breaks |
 | `diagnose` | Hard or flaky bugs — structured feedback loop, reproduce, hypothesise, fix |
@@ -107,6 +109,11 @@ Read groups from JWT claims. Enforce Admin vs Viewer per endpoint.
 Unit: ProductService, ProductRepository.
 Integration: Testcontainers MySQL, full CRUD flow.
 ```
+
+> For an ASP.NET Core API the same phase would use `unit-testing-csharp` (contract first,
+> then tests) and `integration-testing-aspnetcore` (endpoint tests through the real
+> pipeline). This Lambda example stays on `/test` + a Testcontainers fixture because the
+> integration skill's scope is ASP.NET Core over HTTP.
 
 ---
 
